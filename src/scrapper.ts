@@ -58,20 +58,17 @@ class Scrapper {
                         home_team_name: root_odd_row.home_team_name,
                         away_team_name: root_odd_row.away_team_name,
                         site_fixture_id: root_odd_row.site_fixture_id,
-                        upper_team_name: "",
-                        lower_team_name: "",
+                        ft_upper_team_name: "",
+                        ft_lower_team_name: "",
                         odds: []
                     }
 
-                    let upper_team_name: string = "";
-                    let lower_team_name: string = "";
-
-                    if (root_odd_row.is_home_team_upper) {
-                        fixture.upper_team_name = root_odd_row.home_team_name;
-                        fixture.lower_team_name = root_odd_row.away_team_name;
+                    if (root_odd_row.ft_is_home_team_upper) {
+                        fixture.ft_upper_team_name = root_odd_row.home_team_name;
+                        fixture.ft_lower_team_name = root_odd_row.away_team_name;
                     } else {
-                        fixture.upper_team_name = root_odd_row.away_team_name;
-                        fixture.lower_team_name = root_odd_row.home_team_name;
+                        fixture.ft_upper_team_name = root_odd_row.away_team_name;
+                        fixture.ft_lower_team_name = root_odd_row.home_team_name;
                     }
 
                     let odds = fixture_with_odds.map((fixture_with_odd, index) => {

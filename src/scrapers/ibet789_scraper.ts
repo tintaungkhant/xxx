@@ -363,35 +363,16 @@ class IBet789Scrapper extends Scrapper {
                                 });
                             }
 
-                            let is_home_team_upper = false;
+                            let ft_is_home_team_upper = await this.isHomeTeamUpper(
+                                odd_type,
+                                ft_hdp,
+                                ft_raw_hdp,
+                                ft_hdp_odds.ft_hdp_home,
+                                ft_hdp_odds.ft_hdp_away,
+                                home_team_span
+                            );
 
-                            if (ft_hdp[0] == 0 && odd_type === OddType.Myanmar) {
-                                if (
-                                    (ft_raw_hdp.includes("H") && (ft_hdp[1] == 0 || (ft_hdp[1] && isNegative(ft_hdp[1])))) ||
-                                    (ft_raw_hdp.includes("A") && ft_hdp[1] && isPositive(ft_hdp[1]))
-                                ) {
-                                    is_home_team_upper = true;
-                                }
-                            } else if (ft_hdp[0] == 0 && ft_hdp.length === 1 && odd_type === OddType.Malay) {
-                                if (
-                                    (ft_hdp_odds.ft_hdp_home >= 0 && ft_hdp_odds.ft_hdp_away >= 0) ||
-                                    (ft_hdp_odds.ft_hdp_home < 0 && ft_hdp_odds.ft_hdp_away < 0)
-                                ) { // + + || - -
-                                    if (ft_hdp_odds.ft_hdp_home < ft_hdp_odds.ft_hdp_away) {
-                                        is_home_team_upper = true;
-                                    }
-                                } else { // + -
-                                    if (ft_hdp_odds.ft_hdp_home > ft_hdp_odds.ft_hdp_away) {
-                                        is_home_team_upper = true;
-                                    }
-                                }
-                            } else {
-                                if (home_team_span) {
-                                    is_home_team_upper = await home_team_span.evaluate(el => el.classList.contains("Give"));
-                                }
-                            }
-
-                            let is_away_team_upper = !is_home_team_upper;
+                            let ft_is_away_team_upper = !ft_is_home_team_upper;
 
                             let site_fixture_id = await fixture_tr.evaluate((el, { site_name }) => {
                                 let text = el.getAttribute("favid");
@@ -402,8 +383,8 @@ class IBet789Scrapper extends Scrapper {
                                 odd_type,
                                 home_team_name: this.formatTeamName(home_team_name),
                                 away_team_name: this.formatTeamName(away_team_name),
-                                is_home_team_upper,
-                                is_away_team_upper,
+                                ft_is_home_team_upper,
+                                ft_is_away_team_upper,
                                 ft_hdp,
                                 ...ft_hdp_odds,
                                 ft_ou,
@@ -428,6 +409,45 @@ class IBet789Scrapper extends Scrapper {
 
             throw new Error("");
         }
+    }
+
+    async isHomeTeamUpper(
+        odd_type: OddType,
+        hdp: Array<any>,
+        raw_hdp: string,
+        hdp_home: number,
+        hdp_away: number,
+        home_team_span: null | puppeteer.ElementHandle
+    ) {
+        let is_home_team_upper = false;
+
+        if (hdp[0] == 0 && odd_type === OddType.Myanmar) {
+            if (
+                (raw_hdp.includes("H") && (hdp[1] == 0 || (hdp[1] && isNegative(hdp[1])))) ||
+                (raw_hdp.includes("A") && hdp[1] && isPositive(hdp[1]))
+            ) {
+                is_home_team_upper = true;
+            }
+        } else if (hdp[0] == 0 && hdp.length === 1 && odd_type === OddType.Malay) {
+            if (
+                (hdp_home >= 0 && hdp_away >= 0) ||
+                (hdp_home < 0 && hdp_away < 0)
+            ) { // + + || - -
+                if (hdp_home < hdp_away) {
+                    is_home_team_upper = true;
+                }
+            } else { // + -
+                if (hdp_home > hdp_away) {
+                    is_home_team_upper = true;
+                }
+            }
+        } else {
+            if (home_team_span) {
+                is_home_team_upper = await home_team_span.evaluate(el => el.classList.contains("Give"));
+            }
+        }
+
+        return is_home_team_upper;
     }
 
     async extractFTRawHdp(fixture_tr: puppeteer.ElementHandle) {

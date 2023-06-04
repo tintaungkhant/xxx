@@ -12,8 +12,8 @@ type FixtureType = {
     home_team_name: string,
     away_team_name: string,
     site_fixture_id: string,
-    upper_team_name: string,
-    lower_team_name: string,
+    ft_upper_team_name: string,
+    ft_lower_team_name: string,
     odds: OddType[]
 }
 
