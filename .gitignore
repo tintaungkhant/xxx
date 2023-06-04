@@ -1,0 +1,5 @@
+/node_modules
+/build/logs
+/logs
+/verify_codes
+.env
