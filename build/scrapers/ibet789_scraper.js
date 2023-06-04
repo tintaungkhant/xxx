@@ -308,38 +308,14 @@ class IBet789Scrapper extends scrapper_1.default {
                                         return text ? text : "";
                                     });
                                 }
-                                let is_home_team_upper = false;
-                                if (ft_hdp[0] == 0 && odd_type === enums_1.OddType.Myanmar) {
-                                    if ((ft_raw_hdp.includes("H") && (ft_hdp[1] == 0 || (ft_hdp[1] && (0, helper_1.isNegative)(ft_hdp[1])))) ||
-                                        (ft_raw_hdp.includes("A") && ft_hdp[1] && (0, helper_1.isPositive)(ft_hdp[1]))) {
-                                        is_home_team_upper = true;
-                                    }
-                                }
-                                else if (ft_hdp[0] == 0 && ft_hdp.length === 1 && odd_type === enums_1.OddType.Malay) {
-                                    if ((ft_hdp_odds.ft_hdp_home >= 0 && ft_hdp_odds.ft_hdp_away >= 0) ||
-                                        (ft_hdp_odds.ft_hdp_home < 0 && ft_hdp_odds.ft_hdp_away < 0)) { // + + || - -
-                                        if (ft_hdp_odds.ft_hdp_home < ft_hdp_odds.ft_hdp_away) {
-                                            is_home_team_upper = true;
-                                        }
-                                    }
-                                    else { // + -
-                                        if (ft_hdp_odds.ft_hdp_home > ft_hdp_odds.ft_hdp_away) {
-                                            is_home_team_upper = true;
-                                        }
-                                    }
-                                }
-                                else {
-                                    if (home_team_span) {
-                                        is_home_team_upper = yield home_team_span.evaluate(el => el.classList.contains("Give"));
-                                    }
-                                }
-                                let is_away_team_upper = !is_home_team_upper;
+                                let ft_is_home_team_upper = yield this.isHomeTeamUpper(odd_type, ft_hdp, ft_raw_hdp, ft_hdp_odds.ft_hdp_home, ft_hdp_odds.ft_hdp_away, home_team_span);
+                                let ft_is_away_team_upper = !ft_is_home_team_upper;
                                 let site_fixture_id = yield fixture_tr.evaluate((el, { site_name }) => {
                                     let text = el.getAttribute("favid");
                                     return text ? site_name + text : "";
                                 }, { site_name: this.site_name });
-                                fixtures.push(Object.assign(Object.assign(Object.assign(Object.assign({ odd_type, home_team_name: this.formatTeamName(home_team_name), away_team_name: this.formatTeamName(away_team_name), is_home_team_upper,
-                                    is_away_team_upper,
+                                fixtures.push(Object.assign(Object.assign(Object.assign(Object.assign({ odd_type, home_team_name: this.formatTeamName(home_team_name), away_team_name: this.formatTeamName(away_team_name), ft_is_home_team_upper,
+                                    ft_is_away_team_upper,
                                     ft_hdp }, ft_hdp_odds), { ft_ou }), ou_odds), { site_fixture_id }));
                             }
                             item.league_name = this.formatLeagueName(league_name);
@@ -355,6 +331,36 @@ class IBet789Scrapper extends scrapper_1.default {
                 this.logger.error("There's an error while extracting raw data");
                 throw new Error("");
             }
+        });
+    }
+    isHomeTeamUpper(odd_type, hdp, raw_hdp, hdp_home, hdp_away, home_team_span) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let is_home_team_upper = false;
+            if (hdp[0] == 0 && odd_type === enums_1.OddType.Myanmar) {
+                if ((raw_hdp.includes("H") && (hdp[1] == 0 || (hdp[1] && (0, helper_1.isNegative)(hdp[1])))) ||
+                    (raw_hdp.includes("A") && hdp[1] && (0, helper_1.isPositive)(hdp[1]))) {
+                    is_home_team_upper = true;
+                }
+            }
+            else if (hdp[0] == 0 && hdp.length === 1 && odd_type === enums_1.OddType.Malay) {
+                if ((hdp_home >= 0 && hdp_away >= 0) ||
+                    (hdp_home < 0 && hdp_away < 0)) { // + + || - -
+                    if (hdp_home < hdp_away) {
+                        is_home_team_upper = true;
+                    }
+                }
+                else { // + -
+                    if (hdp_home > hdp_away) {
+                        is_home_team_upper = true;
+                    }
+                }
+            }
+            else {
+                if (home_team_span) {
+                    is_home_team_upper = yield home_team_span.evaluate(el => el.classList.contains("Give"));
+                }
+            }
+            return is_home_team_upper;
         });
     }
     extractFTRawHdp(fixture_tr) {
