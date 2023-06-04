@@ -328,12 +328,12 @@ class IBet789Scrapper extends Scrapper {
                             }, OddType);
 
 
-                            let raw_hdp = await this.extractRawHdp(fixture_tr);
-                            let ft_hdp = this.rawHandicapToArray(odd_type, raw_hdp);
+                            let ft_raw_hdp = await this.extractFTRawHdp(fixture_tr);
+                            let ft_hdp = this.rawHandicapToArray(odd_type, ft_raw_hdp);
                             let ft_hdp_odds = await this.extractFTHdpOdd(fixture_tr, ft_hdp);
 
-                            let raw_ou = await this.extractRawOU(fixture_tr);
-                            let ft_ou = this.rawHandicapToArray(odd_type, raw_ou);
+                            let ft_raw_ou = await this.extractFTRawOU(fixture_tr);
+                            let ft_ou = this.rawHandicapToArray(odd_type, ft_raw_ou);
                             let ou_odds = await this.extractFTOUOdd(fixture_tr, ft_ou);
 
                             let team_spans = await fixture_tr.$$("td:nth-child(2) > table > tbody > tr > td:nth-child(2) > table > tbody > tr span");
@@ -367,8 +367,8 @@ class IBet789Scrapper extends Scrapper {
 
                             if (ft_hdp[0] == 0 && odd_type === OddType.Myanmar) {
                                 if (
-                                    (raw_hdp.includes("H") && (ft_hdp[1] == 0 || (ft_hdp[1] && isNegative(ft_hdp[1])))) ||
-                                    (raw_hdp.includes("A") && ft_hdp[1] && isPositive(ft_hdp[1]))
+                                    (ft_raw_hdp.includes("H") && (ft_hdp[1] == 0 || (ft_hdp[1] && isNegative(ft_hdp[1])))) ||
+                                    (ft_raw_hdp.includes("A") && ft_hdp[1] && isPositive(ft_hdp[1]))
                                 ) {
                                     is_home_team_upper = true;
                                 }
@@ -430,7 +430,7 @@ class IBet789Scrapper extends Scrapper {
         }
     }
 
-    async extractRawHdp(fixture_tr: puppeteer.ElementHandle) {
+    async extractFTRawHdp(fixture_tr: puppeteer.ElementHandle) {
         let raw_hdp = "";
         let hdp_td = await fixture_tr.$("td:nth-child(3) > span");
         if (hdp_td) {
@@ -444,7 +444,7 @@ class IBet789Scrapper extends Scrapper {
         return raw_hdp;
     }
 
-    async extractRawOU(fixture_tr: puppeteer.ElementHandle) {
+    async extractFTRawOU(fixture_tr: puppeteer.ElementHandle) {
         let raw_ou = "";
         let ou_td = await fixture_tr.$("td:nth-child(6) > span");
         if (ou_td) {

@@ -281,11 +281,11 @@ class IBet789Scrapper extends scrapper_1.default {
                                 let odd_type = yield fixture_tr.evaluate((el, OddType) => {
                                     return el.classList.contains("MMGridItem") ? OddType.Myanmar : OddType.Malay;
                                 }, enums_1.OddType);
-                                let raw_hdp = yield this.extractRawHdp(fixture_tr);
-                                let ft_hdp = this.rawHandicapToArray(odd_type, raw_hdp);
+                                let ft_raw_hdp = yield this.extractFTRawHdp(fixture_tr);
+                                let ft_hdp = this.rawHandicapToArray(odd_type, ft_raw_hdp);
                                 let ft_hdp_odds = yield this.extractFTHdpOdd(fixture_tr, ft_hdp);
-                                let raw_ou = yield this.extractRawOU(fixture_tr);
-                                let ft_ou = this.rawHandicapToArray(odd_type, raw_ou);
+                                let ft_raw_ou = yield this.extractFTRawOU(fixture_tr);
+                                let ft_ou = this.rawHandicapToArray(odd_type, ft_raw_ou);
                                 let ou_odds = yield this.extractFTOUOdd(fixture_tr, ft_ou);
                                 let team_spans = yield fixture_tr.$$("td:nth-child(2) > table > tbody > tr > td:nth-child(2) > table > tbody > tr span");
                                 let home_team_span = null;
@@ -310,8 +310,8 @@ class IBet789Scrapper extends scrapper_1.default {
                                 }
                                 let is_home_team_upper = false;
                                 if (ft_hdp[0] == 0 && odd_type === enums_1.OddType.Myanmar) {
-                                    if ((raw_hdp.includes("H") && (ft_hdp[1] == 0 || (ft_hdp[1] && (0, helper_1.isNegative)(ft_hdp[1])))) ||
-                                        (raw_hdp.includes("A") && ft_hdp[1] && (0, helper_1.isPositive)(ft_hdp[1]))) {
+                                    if ((ft_raw_hdp.includes("H") && (ft_hdp[1] == 0 || (ft_hdp[1] && (0, helper_1.isNegative)(ft_hdp[1])))) ||
+                                        (ft_raw_hdp.includes("A") && ft_hdp[1] && (0, helper_1.isPositive)(ft_hdp[1]))) {
                                         is_home_team_upper = true;
                                     }
                                 }
@@ -357,7 +357,7 @@ class IBet789Scrapper extends scrapper_1.default {
             }
         });
     }
-    extractRawHdp(fixture_tr) {
+    extractFTRawHdp(fixture_tr) {
         return __awaiter(this, void 0, void 0, function* () {
             let raw_hdp = "";
             let hdp_td = yield fixture_tr.$("td:nth-child(3) > span");
@@ -371,7 +371,7 @@ class IBet789Scrapper extends scrapper_1.default {
             return raw_hdp;
         });
     }
-    extractRawOU(fixture_tr) {
+    extractFTRawOU(fixture_tr) {
         return __awaiter(this, void 0, void 0, function* () {
             let raw_ou = "";
             let ou_td = yield fixture_tr.$("td:nth-child(6) > span");
