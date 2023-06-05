@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model iBet789_League {
+  id Int @id @default(autoincrement())
+
+  teams TeamsUnderLeagues[]
+
+  fixtures ibet789_Fixture[]
+
+  name String? @unique
+
+  get_odd Boolean @default(true)
+
+  created_at DateTime @default(now())
+
+  updated_at DateTime @updatedAt
+}
+
+model iBet789_Team {
+  id Int @id @default(autoincrement())
+
+  leagues TeamsUnderLeagues[]
+
+  home_fixtures ibet789_Fixture[] @relation(name: "home_team")
+
+  away_fixtures ibet789_Fixture[] @relation(name: "away_team")
+
+  name String? @unique
+
+  created_at DateTime @default(now())
+
+  updated_at DateTime @updatedAt
+}
+
+model TeamsUnderLeagues {
+  team iBet789_Team @relation(fields: [ibet789_team_id], references: [id])
+  ibet789_team_id Int
+  league iBet789_League @relation(fields: [ibet789_league_id], references: [id])
+  ibet789_league_id Int
+  created_at DateTime @default(now())
+  @@id([ibet789_team_id, ibet789_league_id])
+}
+
+model ibet789_Fixture {
+  id Int @id @default(autoincrement())
+
+  league iBet789_League @relation(fields: [ibet789_league_id], references: [id])
+
+  ibet789_league_id Int
+
+  site_fixture_id String?
+
+  home_team iBet789_Team? @relation(fields: [ibet789_home_team_id], references: [id], name: "home_team")
+
+  ibet789_home_team_id Int
+
+  away_team iBet789_Team? @relation(fields: [ibet789_away_team_id], references: [id], name: "away_team")
+
+  ibet789_away_team_id Int?
+
+  created_at DateTime @default(now())
+
+  updated_at DateTime @updatedAt
+}
