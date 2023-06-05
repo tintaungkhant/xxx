@@ -6,6 +6,12 @@ type OddType = {
     ft_ou: number[],
     ft_ou_over: number,
     ft_ou_under: number,
+    fh_hdp: number[],
+    fh_hdp_home: number,
+    fh_hdp_away: number,
+    fh_ou: number[],
+    fh_ou_over: number,
+    fh_ou_under: number,
 }
 
 type FixtureType = {
@@ -14,6 +20,8 @@ type FixtureType = {
     site_fixture_id: string,
     ft_upper_team_name: string,
     ft_lower_team_name: string,
+    fh_upper_team_name: string,
+    fh_lower_team_name: string,
     odds: OddType[]
 }
 

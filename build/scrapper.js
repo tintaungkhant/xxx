@@ -65,7 +65,9 @@ class Scrapper {
                             site_fixture_id: root_odd_row.site_fixture_id,
                             ft_upper_team_name: "",
                             ft_lower_team_name: "",
-                            odds: []
+                            fh_upper_team_name: "",
+                            fh_lower_team_name: "",
+                            odds: [],
                         };
                         if (root_odd_row.ft_is_home_team_upper) {
                             fixture.ft_upper_team_name = root_odd_row.home_team_name;
@@ -75,6 +77,14 @@ class Scrapper {
                             fixture.ft_upper_team_name = root_odd_row.away_team_name;
                             fixture.ft_lower_team_name = root_odd_row.home_team_name;
                         }
+                        if (root_odd_row.fh_is_home_team_upper) {
+                            fixture.fh_upper_team_name = root_odd_row.home_team_name;
+                            fixture.fh_lower_team_name = root_odd_row.away_team_name;
+                        }
+                        else {
+                            fixture.fh_upper_team_name = root_odd_row.away_team_name;
+                            fixture.fh_lower_team_name = root_odd_row.home_team_name;
+                        }
                         let odds = fixture_with_odds.map((fixture_with_odd, index) => {
                             let odd_data = {
                                 type: fixture_with_odd.odd_type,
@@ -83,7 +93,13 @@ class Scrapper {
                                 ft_hdp_away: fixture_with_odd.ft_hdp_away,
                                 ft_ou: fixture_with_odd.ft_ou,
                                 ft_ou_over: fixture_with_odd.ft_ou_over,
-                                ft_ou_under: fixture_with_odd.ft_ou_under
+                                ft_ou_under: fixture_with_odd.ft_ou_under,
+                                fh_hdp: fixture_with_odd.fh_hdp,
+                                fh_hdp_home: fixture_with_odd.fh_hdp_home,
+                                fh_hdp_away: fixture_with_odd.fh_hdp_away,
+                                fh_ou: fixture_with_odd.fh_ou,
+                                fh_ou_over: fixture_with_odd.fh_ou_over,
+                                fh_ou_under: fixture_with_odd.fh_ou_under,
                             };
                             return odd_data;
                         });

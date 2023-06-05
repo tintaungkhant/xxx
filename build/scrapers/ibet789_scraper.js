@@ -86,7 +86,6 @@ class IBet789Scrapper extends scrapper_1.default {
                 // await this.storeData(transformed_data, this.site_name);
                 this.logger.info("Saved to database");
                 (_a = this.browser) === null || _a === void 0 ? void 0 : _a.disconnect();
-                this.logger.info("Browser disconnected");
                 let end_time = Date.now();
                 this.logger.info("DURATION " + (end_time - start_time) / 1000);
             }
@@ -94,7 +93,6 @@ class IBet789Scrapper extends scrapper_1.default {
                 this.logger.error("Error at scrapping");
                 yield this.closeAllPages();
                 (_b = this.browser) === null || _b === void 0 ? void 0 : _b.disconnect();
-                this.logger.info("Browser disconnected");
                 throw new Error("");
             }
         });
@@ -284,9 +282,15 @@ class IBet789Scrapper extends scrapper_1.default {
                                 let ft_raw_hdp = yield this.extractFTRawHdp(fixture_tr);
                                 let ft_hdp = this.rawHandicapToArray(odd_type, ft_raw_hdp);
                                 let ft_hdp_odds = yield this.extractFTHdpOdd(fixture_tr, ft_hdp);
+                                let fh_raw_hdp = yield this.extractFHRawHdp(fixture_tr);
+                                let fh_hdp = this.rawHandicapToArray(odd_type, fh_raw_hdp);
+                                let fh_hdp_odds = yield this.extractFHHdpOdd(fixture_tr, fh_hdp);
                                 let ft_raw_ou = yield this.extractFTRawOU(fixture_tr);
                                 let ft_ou = this.rawHandicapToArray(odd_type, ft_raw_ou);
-                                let ou_odds = yield this.extractFTOUOdd(fixture_tr, ft_ou);
+                                let ft_ou_odds = yield this.extractFTOUOdd(fixture_tr, ft_ou);
+                                let fh_raw_ou = yield this.extractFHRawOU(fixture_tr);
+                                let fh_ou = this.rawHandicapToArray(odd_type, fh_raw_ou);
+                                let fh_ou_odds = yield this.extractFHOUOdd(fixture_tr, fh_ou);
                                 let team_spans = yield fixture_tr.$$("td:nth-child(2) > table > tbody > tr > td:nth-child(2) > table > tbody > tr span");
                                 let home_team_span = null;
                                 let away_team_span = null;
@@ -310,13 +314,17 @@ class IBet789Scrapper extends scrapper_1.default {
                                 }
                                 let ft_is_home_team_upper = yield this.isHomeTeamUpper(odd_type, ft_hdp, ft_raw_hdp, ft_hdp_odds.ft_hdp_home, ft_hdp_odds.ft_hdp_away, home_team_span);
                                 let ft_is_away_team_upper = !ft_is_home_team_upper;
+                                let fh_is_home_team_upper = yield this.isHomeTeamUpper(odd_type, fh_hdp, fh_raw_hdp, fh_hdp_odds.fh_hdp_home, fh_hdp_odds.fh_hdp_away, home_team_span);
+                                let fh_is_away_team_upper = !fh_is_home_team_upper;
                                 let site_fixture_id = yield fixture_tr.evaluate((el, { site_name }) => {
                                     let text = el.getAttribute("favid");
                                     return text ? site_name + text : "";
                                 }, { site_name: this.site_name });
-                                fixtures.push(Object.assign(Object.assign(Object.assign(Object.assign({ odd_type, home_team_name: this.formatTeamName(home_team_name), away_team_name: this.formatTeamName(away_team_name), ft_is_home_team_upper,
+                                fixtures.push(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ odd_type, home_team_name: this.formatTeamName(home_team_name), away_team_name: this.formatTeamName(away_team_name), ft_is_home_team_upper,
                                     ft_is_away_team_upper,
-                                    ft_hdp }, ft_hdp_odds), { ft_ou }), ou_odds), { site_fixture_id }));
+                                    ft_hdp }, ft_hdp_odds), { ft_ou }), ft_ou_odds), { fh_is_home_team_upper,
+                                    fh_is_away_team_upper,
+                                    fh_hdp }), fh_hdp_odds), { fh_ou }), fh_ou_odds), { site_fixture_id }));
                             }
                             item.league_name = this.formatLeagueName(league_name);
                             item.fixtures = fixtures;
@@ -377,10 +385,38 @@ class IBet789Scrapper extends scrapper_1.default {
             return raw_hdp;
         });
     }
+    extractFHRawHdp(fixture_tr) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let raw_hdp = "";
+            let hdp_td = yield fixture_tr.$("td:nth-child(9) > span");
+            if (hdp_td) {
+                raw_hdp = yield hdp_td.evaluate(el => {
+                    var _a;
+                    let text = (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim();
+                    return text || text == "0" ? text : "";
+                });
+            }
+            return raw_hdp;
+        });
+    }
     extractFTRawOU(fixture_tr) {
         return __awaiter(this, void 0, void 0, function* () {
             let raw_ou = "";
             let ou_td = yield fixture_tr.$("td:nth-child(6) > span");
+            if (ou_td) {
+                raw_ou = yield ou_td.evaluate(el => {
+                    var _a;
+                    let text = (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim();
+                    return text || text === "0" ? text : "";
+                });
+            }
+            return raw_ou;
+        });
+    }
+    extractFHRawOU(fixture_tr) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let raw_ou = "";
+            let ou_td = yield fixture_tr.$("td:nth-child(12) > span");
             if (ou_td) {
                 raw_ou = yield ou_td.evaluate(el => {
                     var _a;
@@ -417,6 +453,32 @@ class IBet789Scrapper extends scrapper_1.default {
             };
         });
     }
+    extractFHHdpOdd(fixture_tr, hdp) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let fh_hdp_home = 0;
+            let fh_hdp_away = 0;
+            if (hdp.length) {
+                let fh_hdp_home_td = yield fixture_tr.$("td:nth-child(10) > span > label");
+                let fh_hdp_away_td = yield fixture_tr.$("td:nth-child(11) > span > label");
+                if (fh_hdp_home_td && fh_hdp_away_td) {
+                    fh_hdp_home = yield fh_hdp_home_td.evaluate(el => {
+                        var _a;
+                        let text = (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim();
+                        return text ? parseFloat(text) : 0.00;
+                    });
+                    fh_hdp_away = yield fh_hdp_away_td.evaluate(el => {
+                        var _a;
+                        let text = (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim();
+                        return text ? parseFloat(text) : 0.00;
+                    });
+                }
+            }
+            return {
+                fh_hdp_home,
+                fh_hdp_away
+            };
+        });
+    }
     extractFTOUOdd(fixture_tr, ou) {
         return __awaiter(this, void 0, void 0, function* () {
             let ft_ou_over = 0;
@@ -440,6 +502,32 @@ class IBet789Scrapper extends scrapper_1.default {
             return {
                 ft_ou_over,
                 ft_ou_under
+            };
+        });
+    }
+    extractFHOUOdd(fixture_tr, ou) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let fh_ou_over = 0;
+            let fh_ou_under = 0;
+            if (ou.length) {
+                let fh_ou_over_td = yield fixture_tr.$("td:nth-child(13) > span > label");
+                let fh_ou_under_td = yield fixture_tr.$("td:nth-child(14) > span > label");
+                if (fh_ou_over_td && fh_ou_under_td) {
+                    fh_ou_over = yield fh_ou_over_td.evaluate(el => {
+                        var _a;
+                        let text = (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim();
+                        return text ? parseFloat(text) : 0.00;
+                    });
+                    fh_ou_under = yield fh_ou_under_td.evaluate(el => {
+                        var _a;
+                        let text = (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim();
+                        return text ? parseFloat(text) : 0.00;
+                    });
+                }
+            }
+            return {
+                fh_ou_over,
+                fh_ou_under
             };
         });
     }

@@ -10,6 +10,14 @@ type FixtureType = {
     ft_ou: number[],
     ft_ou_over: number,
     ft_ou_under: number,
+    fh_is_home_team_upper: boolean,
+    fh_is_away_team_upper: boolean,
+    fh_hdp: number[],
+    fh_hdp_home: number,
+    fh_hdp_away: number,
+    fh_ou: number[],
+    fh_ou_over: number,
+    fh_ou_under: number,
     site_fixture_id: string
 }
 

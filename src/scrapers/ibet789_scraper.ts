@@ -85,8 +85,6 @@ class IBet789Scrapper extends Scrapper {
 
             this.browser?.disconnect();
 
-            this.logger.info("Browser disconnected");
-
             let end_time = Date.now();
 
             this.logger.info("DURATION " + (end_time - start_time) / 1000);
@@ -96,8 +94,6 @@ class IBet789Scrapper extends Scrapper {
             await this.closeAllPages();
 
             this.browser?.disconnect();
-
-            this.logger.info("Browser disconnected");
 
             throw new Error("");
         }
@@ -332,9 +328,17 @@ class IBet789Scrapper extends Scrapper {
                             let ft_hdp = this.rawHandicapToArray(odd_type, ft_raw_hdp);
                             let ft_hdp_odds = await this.extractFTHdpOdd(fixture_tr, ft_hdp);
 
+                            let fh_raw_hdp = await this.extractFHRawHdp(fixture_tr);
+                            let fh_hdp = this.rawHandicapToArray(odd_type, fh_raw_hdp);
+                            let fh_hdp_odds = await this.extractFHHdpOdd(fixture_tr, fh_hdp);
+
                             let ft_raw_ou = await this.extractFTRawOU(fixture_tr);
                             let ft_ou = this.rawHandicapToArray(odd_type, ft_raw_ou);
-                            let ou_odds = await this.extractFTOUOdd(fixture_tr, ft_ou);
+                            let ft_ou_odds = await this.extractFTOUOdd(fixture_tr, ft_ou);
+
+                            let fh_raw_ou = await this.extractFHRawOU(fixture_tr);
+                            let fh_ou = this.rawHandicapToArray(odd_type, fh_raw_ou);
+                            let fh_ou_odds = await this.extractFHOUOdd(fixture_tr, fh_ou);
 
                             let team_spans = await fixture_tr.$$("td:nth-child(2) > table > tbody > tr > td:nth-child(2) > table > tbody > tr span");
 
@@ -374,6 +378,17 @@ class IBet789Scrapper extends Scrapper {
 
                             let ft_is_away_team_upper = !ft_is_home_team_upper;
 
+                            let fh_is_home_team_upper = await this.isHomeTeamUpper(
+                                odd_type,
+                                fh_hdp,
+                                fh_raw_hdp,
+                                fh_hdp_odds.fh_hdp_home,
+                                fh_hdp_odds.fh_hdp_away,
+                                home_team_span
+                            );
+
+                            let fh_is_away_team_upper = !fh_is_home_team_upper;
+
                             let site_fixture_id = await fixture_tr.evaluate((el, { site_name }) => {
                                 let text = el.getAttribute("favid");
                                 return text ? site_name + text : "";
@@ -388,7 +403,13 @@ class IBet789Scrapper extends Scrapper {
                                 ft_hdp,
                                 ...ft_hdp_odds,
                                 ft_ou,
-                                ...ou_odds,
+                                ...ft_ou_odds,
+                                fh_is_home_team_upper,
+                                fh_is_away_team_upper,
+                                fh_hdp,
+                                ...fh_hdp_odds,
+                                fh_ou,
+                                ...fh_ou_odds,
                                 site_fixture_id
                             });
                         }
@@ -464,9 +485,37 @@ class IBet789Scrapper extends Scrapper {
         return raw_hdp;
     }
 
+    async extractFHRawHdp(fixture_tr: puppeteer.ElementHandle) {
+        let raw_hdp = "";
+        let hdp_td = await fixture_tr.$("td:nth-child(9) > span");
+        if (hdp_td) {
+            raw_hdp = await hdp_td.evaluate(el => {
+                let text = el.textContent?.trim();
+
+                return text || text == "0" ? text : "";
+            });
+        }
+
+        return raw_hdp;
+    }
+
     async extractFTRawOU(fixture_tr: puppeteer.ElementHandle) {
         let raw_ou = "";
         let ou_td = await fixture_tr.$("td:nth-child(6) > span");
+        if (ou_td) {
+            raw_ou = await ou_td.evaluate(el => {
+                let text = el.textContent?.trim();
+
+                return text || text === "0" ? text : "";
+            });
+        }
+
+        return raw_ou;
+    }
+
+    async extractFHRawOU(fixture_tr: puppeteer.ElementHandle) {
+        let raw_ou = "";
+        let ou_td = await fixture_tr.$("td:nth-child(12) > span");
         if (ou_td) {
             raw_ou = await ou_td.evaluate(el => {
                 let text = el.textContent?.trim();
@@ -503,6 +552,31 @@ class IBet789Scrapper extends Scrapper {
         };
     }
 
+    async extractFHHdpOdd(fixture_tr: puppeteer.ElementHandle, hdp: number[]) {
+        let fh_hdp_home: number = 0;
+        let fh_hdp_away: number = 0;
+
+        if (hdp.length) {
+            let fh_hdp_home_td = await fixture_tr.$("td:nth-child(10) > span > label");
+            let fh_hdp_away_td = await fixture_tr.$("td:nth-child(11) > span > label");
+            if (fh_hdp_home_td && fh_hdp_away_td) {
+                fh_hdp_home = await fh_hdp_home_td.evaluate(el => {
+                    let text = el.textContent?.trim();
+                    return text ? parseFloat(text) : 0.00;
+                });
+                fh_hdp_away = await fh_hdp_away_td.evaluate(el => {
+                    let text = el.textContent?.trim();
+                    return text ? parseFloat(text) : 0.00;
+                });
+            }
+        }
+
+        return {
+            fh_hdp_home,
+            fh_hdp_away
+        };
+    }
+
     async extractFTOUOdd(fixture_tr: puppeteer.ElementHandle, ou: number[]) {
         let ft_ou_over: number = 0;
         let ft_ou_under: number = 0;
@@ -525,6 +599,31 @@ class IBet789Scrapper extends Scrapper {
         return {
             ft_ou_over,
             ft_ou_under
+        };
+    }
+
+    async extractFHOUOdd(fixture_tr: puppeteer.ElementHandle, ou: number[]) {
+        let fh_ou_over: number = 0;
+        let fh_ou_under: number = 0;
+
+        if (ou.length) {
+            let fh_ou_over_td = await fixture_tr.$("td:nth-child(13) > span > label");
+            let fh_ou_under_td = await fixture_tr.$("td:nth-child(14) > span > label");
+            if (fh_ou_over_td && fh_ou_under_td) {
+                fh_ou_over = await fh_ou_over_td.evaluate(el => {
+                    let text = el.textContent?.trim();
+                    return text ? parseFloat(text) : 0.00;
+                });
+                fh_ou_under = await fh_ou_under_td.evaluate(el => {
+                    let text = el.textContent?.trim();
+                    return text ? parseFloat(text) : 0.00;
+                });
+            }
+        }
+
+        return {
+            fh_ou_over,
+            fh_ou_under
         };
     }
 
