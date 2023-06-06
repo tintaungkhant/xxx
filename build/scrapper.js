@@ -16,6 +16,10 @@ const lodash_1 = __importDefault(require("lodash"));
 const enums_1 = require("./enums");
 const helper_1 = require("./helper");
 const logger_1 = __importDefault(require("./logger"));
+const ibet789_league_1 = __importDefault(require("./models/ibet789_league"));
+const ibet789_team_1 = __importDefault(require("./models/ibet789_team"));
+const ibet789_fixture_1 = __importDefault(require("./models/ibet789_fixture"));
+const ibet789_odd_1 = __importDefault(require("./models/ibet789_odd"));
 class Scrapper {
     constructor() {
         this.logger = new logger_1.default();
@@ -45,7 +49,7 @@ class Scrapper {
             }
         }
         else {
-            return (0, helper_1.parseFloatArr)(data.split("-"));
+            return data ? (0, helper_1.parseFloatArr)(data.split("-")) : [];
         }
     }
     transformRawData(raw_data) {
@@ -118,6 +122,62 @@ class Scrapper {
             catch (err) {
                 this.logger.error("There's an error while transforming raw data");
                 throw new Error("");
+            }
+        });
+    }
+    storeData(transformed_raw_data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let league_names = [];
+            let team_names = [];
+            for (let index_1 = 0; index_1 < transformed_raw_data.length; index_1++) {
+                let league = transformed_raw_data[index_1];
+                league_names.push(league.league_name);
+                for (let index_2 = 0; index_2 < league.fixtures.length; index_2++) {
+                    let fixture = league.fixtures[index_2];
+                    team_names.push(fixture.home_team_name);
+                    team_names.push(fixture.away_team_name);
+                }
+            }
+            let db_leagues = yield ibet789_league_1.default.getLeaguesByNames(league_names);
+            if (db_leagues.length !== league_names.length) {
+                for (let index = 0; index < league_names.length; index++) {
+                    let league_name = league_names[index];
+                    let db_league = db_leagues.find((db_league) => db_league.name === league_names[index]);
+                    if (!db_league) {
+                        db_league = yield ibet789_league_1.default.createLeague(league_name);
+                        db_leagues.push(db_league);
+                    }
+                }
+            }
+            for (let index_1 = 0; index_1 < transformed_raw_data.length; index_1++) {
+                let league = transformed_raw_data[index_1];
+                let db_league = db_leagues.find((db_league) => db_league.name === league.league_name);
+                if (db_league) {
+                    let league_id = db_league.id;
+                    for (let index_2 = 0; index_2 < league.fixtures.length; index_2++) {
+                        let fixture = league.fixtures[index_2];
+                        let db_home_team = yield ibet789_team_1.default.firstOrCreateTeam(fixture.home_team_name, league_id);
+                        let db_away_team = yield ibet789_team_1.default.firstOrCreateTeam(fixture.away_team_name, league_id);
+                        let db_fixture = yield ibet789_fixture_1.default.firstOrCreateFixture(league_id, fixture.site_fixture_id, db_home_team.id, db_away_team.id);
+                        let ft_upper_team_id;
+                        let ft_lower_team_id;
+                        ft_upper_team_id = fixture.home_team_name === fixture.ft_upper_team_name ? db_home_team.id : db_away_team.id;
+                        ft_lower_team_id = fixture.home_team_name === fixture.ft_lower_team_name ? db_home_team.id : db_away_team.id;
+                        if (ft_upper_team_id == ft_lower_team_id) {
+                            ft_upper_team_id = ft_lower_team_id = null;
+                        }
+                        let fh_upper_team_id;
+                        let fh_lower_team_id;
+                        fh_upper_team_id = fixture.home_team_name === fixture.fh_upper_team_name ? db_home_team.id : db_away_team.id;
+                        fh_lower_team_id = fixture.home_team_name === fixture.fh_lower_team_name ? db_home_team.id : db_away_team.id;
+                        if (fh_upper_team_id == fh_lower_team_id) {
+                            fh_upper_team_id = fh_lower_team_id = null;
+                        }
+                        if (ft_upper_team_id || fh_upper_team_id) {
+                            yield ibet789_odd_1.default.createOdd(fixture.odds, db_fixture.id, ft_upper_team_id, ft_lower_team_id, fh_upper_team_id, fh_lower_team_id);
+                        }
+                    }
+                }
             }
         });
     }

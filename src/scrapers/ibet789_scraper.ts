@@ -77,9 +77,9 @@ class IBet789Scrapper extends Scrapper {
 
             this.logger.info("Saving to database");
 
-            fs.writeFileSync("test.json", JSON.stringify(transformed_data));
+            // fs.writeFileSync("test.json", JSON.stringify(transformed_data));
 
-            // await this.storeData(transformed_data, this.site_name);
+            await this.storeData(transformed_data);
 
             this.logger.info("Saved to database");
 

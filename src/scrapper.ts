@@ -4,6 +4,10 @@ import { RawOddTypes, TransformedOddTypes } from "./types";
 
 import { parseFloatArr } from "./helper";
 import Logger from "./logger";
+import iBet789League from "./models/ibet789_league";
+import iBet789Team from "./models/ibet789_team";
+import iBet789Fixture from "./models/ibet789_fixture";
+import iBet789OddGroup from "./models/ibet789_odd";
 
 class Scrapper {
     logger: Logger;
@@ -37,7 +41,7 @@ class Scrapper {
                 return [];
             }
         } else {
-            return parseFloatArr(data.split("-"));
+            return data ? parseFloatArr(data.split("-")) : [];
         }
     }
 
@@ -121,6 +125,82 @@ class Scrapper {
             this.logger.error("There's an error while transforming raw data");
 
             throw new Error("");
+        }
+    }
+
+    async storeData(transformed_raw_data: TransformedOddTypes.LeagueType[]) {
+        let league_names : string[] = [];
+        let team_names = [];
+
+        for (let index_1 = 0; index_1 < transformed_raw_data.length; index_1++) {
+            let league = transformed_raw_data[index_1];
+
+            league_names.push(league.league_name);
+
+            for (let index_2 = 0; index_2 < league.fixtures.length; index_2++) {
+                let fixture = league.fixtures[index_2];
+
+                team_names.push(fixture.home_team_name);
+                team_names.push(fixture.away_team_name);
+            }
+        }
+
+        let db_leagues = await iBet789League.getLeaguesByNames(league_names);
+
+        if (db_leagues.length !== league_names.length) {
+            for (let index = 0; index < league_names.length; index++) {
+                let league_name = league_names[index];
+
+                let db_league = db_leagues.find((db_league) => db_league.name === league_names[index]);  
+                if(!db_league){
+                    db_league = await iBet789League.createLeague(league_name);
+                    db_leagues.push(db_league);
+                }              
+            }
+        }
+
+        for (let index_1 = 0; index_1 < transformed_raw_data.length; index_1++) {
+            let league = transformed_raw_data[index_1];
+
+            let db_league = db_leagues.find((db_league) => db_league.name === league.league_name);
+
+            if (db_league) {
+                let league_id = db_league.id;
+
+                for (let index_2 = 0; index_2 < league.fixtures.length; index_2++) {
+                    let fixture = league.fixtures[index_2];
+
+                    let db_home_team = await iBet789Team.firstOrCreateTeam(fixture.home_team_name, league_id);
+
+                    let db_away_team = await iBet789Team.firstOrCreateTeam(fixture.away_team_name, league_id);
+
+                    let db_fixture = await iBet789Fixture.firstOrCreateFixture(league_id, fixture.site_fixture_id, db_home_team.id, db_away_team.id);
+
+                    let ft_upper_team_id: number | null;
+                    let ft_lower_team_id: number | null;
+
+                    ft_upper_team_id = fixture.home_team_name === fixture.ft_upper_team_name ? db_home_team.id : db_away_team.id;
+                    ft_lower_team_id = fixture.home_team_name === fixture.ft_lower_team_name ? db_home_team.id : db_away_team.id;
+
+                    if (ft_upper_team_id == ft_lower_team_id) {
+                        ft_upper_team_id = ft_lower_team_id = null;
+                    }
+
+                    let fh_upper_team_id: number | null;
+                    let fh_lower_team_id: number | null;
+
+                    fh_upper_team_id = fixture.home_team_name === fixture.fh_upper_team_name ? db_home_team.id : db_away_team.id;
+                    fh_lower_team_id = fixture.home_team_name === fixture.fh_lower_team_name ? db_home_team.id : db_away_team.id;
+
+                    if (fh_upper_team_id == fh_lower_team_id) {
+                        fh_upper_team_id = fh_lower_team_id = null;
+                    }
+
+                    if (ft_upper_team_id || fh_upper_team_id) {
+                        await iBet789OddGroup.createOdd(fixture.odds, db_fixture.id, ft_upper_team_id, ft_lower_team_id, fh_upper_team_id, fh_lower_team_id);
+                    }
+                }
+            }
         }
     }
 }

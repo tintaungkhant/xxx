@@ -40,7 +40,6 @@ const dotenv = __importStar(require("dotenv"));
 dotenv.config({ path: (0, helper_1.rootDir)() + '/.env' });
 const enums_1 = require("../enums");
 const scrapper_1 = __importDefault(require("../scrapper"));
-const fs_1 = __importDefault(require("fs"));
 class IBet789Scrapper extends scrapper_1.default {
     constructor(browser) {
         super();
@@ -82,8 +81,8 @@ class IBet789Scrapper extends scrapper_1.default {
                 let raw_data = yield this.extractRawData();
                 let transformed_data = yield this.transformRawData(raw_data);
                 this.logger.info("Saving to database");
-                fs_1.default.writeFileSync("test.json", JSON.stringify(transformed_data));
-                // await this.storeData(transformed_data, this.site_name);
+                // fs.writeFileSync("test.json", JSON.stringify(transformed_data));
+                yield this.storeData(transformed_data);
                 this.logger.info("Saved to database");
                 (_a = this.browser) === null || _a === void 0 ? void 0 : _a.disconnect();
                 let end_time = Date.now();

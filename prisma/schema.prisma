@@ -10,32 +10,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model iBet789_League {
+model iBet789League {
   id Int @id @default(autoincrement())
 
   teams TeamsUnderLeagues[]
 
-  fixtures ibet789_Fixture[]
+  fixtures iBet789Fixture[]
 
-  name String? @unique
-
-  get_odd Boolean @default(true)
+  name String @unique
 
   created_at DateTime @default(now())
 
   updated_at DateTime @updatedAt
 }
 
-model iBet789_Team {
+model iBet789Team {
   id Int @id @default(autoincrement())
 
   leagues TeamsUnderLeagues[]
 
-  home_fixtures ibet789_Fixture[] @relation(name: "home_team")
+  home_fixtures iBet789Fixture[] @relation(name: "home_team")
 
-  away_fixtures ibet789_Fixture[] @relation(name: "away_team")
+  away_fixtures iBet789Fixture[] @relation(name: "away_team")
 
-  name String? @unique
+  ft_upper_fixtures iBet789OddGroup[] @relation(name: "ft_upper_team")
+
+  ft_lower_fixtures iBet789OddGroup[] @relation(name: "ft_lower_team")
+
+  fh_upper_fixtures iBet789OddGroup[] @relation(name: "fh_upper_team")
+
+  fh_lower_fixtures iBet789OddGroup[] @relation(name: "fh_lower_team")
+
+  name String @unique
 
   created_at DateTime @default(now())
 
@@ -43,30 +49,94 @@ model iBet789_Team {
 }
 
 model TeamsUnderLeagues {
-  team iBet789_Team @relation(fields: [ibet789_team_id], references: [id])
+  team iBet789Team @relation(fields: [ibet789_team_id], references: [id])
   ibet789_team_id Int
-  league iBet789_League @relation(fields: [ibet789_league_id], references: [id])
+
+  league iBet789League @relation(fields: [ibet789_league_id], references: [id])
   ibet789_league_id Int
+
   created_at DateTime @default(now())
+
   @@id([ibet789_team_id, ibet789_league_id])
 }
 
-model ibet789_Fixture {
+model iBet789Fixture {
   id Int @id @default(autoincrement())
 
-  league iBet789_League @relation(fields: [ibet789_league_id], references: [id])
-
+  league iBet789League @relation(fields: [ibet789_league_id], references: [id])
   ibet789_league_id Int
+
+  odd_groups iBet789OddGroup[]
 
   site_fixture_id String?
 
-  home_team iBet789_Team? @relation(fields: [ibet789_home_team_id], references: [id], name: "home_team")
-
+  home_team iBet789Team @relation(fields: [ibet789_home_team_id], references: [id], name: "home_team")
   ibet789_home_team_id Int
 
-  away_team iBet789_Team? @relation(fields: [ibet789_away_team_id], references: [id], name: "away_team")
+  away_team iBet789Team @relation(fields: [ibet789_away_team_id], references: [id], name: "away_team")
+  ibet789_away_team_id Int
 
-  ibet789_away_team_id Int?
+  created_at DateTime @default(now())
+
+  updated_at DateTime @updatedAt
+}
+
+model iBet789OddGroup {
+  id Int @id @default(autoincrement())
+
+  fixture iBet789Fixture @relation(fields: [ibet789_fixture_id], references: [id])
+  ibet789_fixture_id Int
+
+  ft_upper_team iBet789Team? @relation(fields: [ibet789_ft_upper_team_id], references: [id], name: "ft_upper_team")
+  ibet789_ft_upper_team_id Int?
+
+  ft_lower_team iBet789Team? @relation(fields: [ibet789_ft_lower_team_id], references: [id], name: "ft_lower_team")
+  ibet789_ft_lower_team_id Int?
+
+  fh_upper_team iBet789Team? @relation(fields: [ibet789_fh_upper_team_id], references: [id], name: "fh_upper_team")
+  ibet789_fh_upper_team_id Int?
+
+  fh_lower_team iBet789Team? @relation(fields: [ibet789_fh_lower_team_id], references: [id], name: "fh_lower_team")
+  ibet789_fh_lower_team_id Int?
+
+  odds iBet789Odd[]
+
+  created_at DateTime @default(now())
+
+  updated_at DateTime @updatedAt
+}
+
+model iBet789Odd {
+  id Int @id @default(autoincrement())
+
+  odd_group iBet789OddGroup @relation(fields: [ibet789_odd_group_id], references: [id])
+  ibet789_odd_group_id Int
+
+  type String
+
+  ft_hdp Json?
+
+  ft_hdp_home Decimal? @db.Decimal(3,2)
+
+  ft_hdp_away Decimal? @db.Decimal(3,2)
+
+  ft_ou Json?
+
+  ft_ou_over Decimal? @db.Decimal(3,2)
+
+  ft_ou_under Decimal? @db.Decimal(3,2)
+
+  fh_hdp Json?
+
+  fh_hdp_home Decimal? @db.Decimal(3,2)
+
+  fh_hdp_away Decimal? @db.Decimal(3,2)
+
+  fh_ou Json?
+
+  fh_ou_over Decimal? @db.Decimal(3,2)
+
+  fh_ou_under Decimal? @db.Decimal(3,2)
 
   created_at DateTime @default(now())
 
