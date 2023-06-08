@@ -1,3 +1,4 @@
+import { getCliOption } from "../helper"
 import Browser from "../browser";
 import Logger from "../logger";
 import IBet789Scrapper from "../scrapers/ibet789_scraper";
@@ -5,7 +6,14 @@ import { SiteName } from "../enums";
 
 var locked = false;
 
-(async () => await run())()
+if (getCliOption("once")) {
+    (async () => await run())();
+} else {
+    setInterval(async () => {
+        await run();
+    }, 15000);
+}
+
 
 async function run() {
     try {

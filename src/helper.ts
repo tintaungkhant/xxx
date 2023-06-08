@@ -1,6 +1,10 @@
 import * as dotenv from 'dotenv'
 dotenv.config();
 
+import yargs from 'yargs';
+import { hideBin } from "yargs/helpers"
+const argv = yargs(hideBin(process.argv)).parseSync();
+
 import Cache from './cache';
 
 import { SiteName } from "./enums"
@@ -10,6 +14,10 @@ import path from 'path';
 function env(key: string, default_value: any = "") {
     let value = process.env[key];
     return value ? value : default_value;
+}
+
+function getCliOption(option: string) {
+    return argv[option] ? argv[option] : "";
 }
 
 function rootDir() {
@@ -56,5 +64,5 @@ function parseFloatArr(arr: any[]) {
 }
 
 export {
-    env, rootDir, getCacheObj, setCacheObj, delay, isNegative, isPositive, parseFloatArr
+    env, rootDir, getCliOption, getCacheObj, setCacheObj, delay, isNegative, isPositive, parseFloatArr
 }

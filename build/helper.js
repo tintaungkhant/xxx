@@ -35,9 +35,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseFloatArr = exports.isPositive = exports.isNegative = exports.delay = exports.setCacheObj = exports.getCacheObj = exports.rootDir = exports.env = void 0;
+exports.parseFloatArr = exports.isPositive = exports.isNegative = exports.delay = exports.setCacheObj = exports.getCacheObj = exports.getCliOption = exports.rootDir = exports.env = void 0;
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
+const yargs_1 = __importDefault(require("yargs"));
+const helpers_1 = require("yargs/helpers");
+const argv = (0, yargs_1.default)((0, helpers_1.hideBin)(process.argv)).parseSync();
 const cache_1 = __importDefault(require("./cache"));
 const path_1 = __importDefault(require("path"));
 function env(key, default_value = "") {
@@ -45,6 +48,10 @@ function env(key, default_value = "") {
     return value ? value : default_value;
 }
 exports.env = env;
+function getCliOption(option) {
+    return argv[option] ? argv[option] : "";
+}
+exports.getCliOption = getCliOption;
 function rootDir() {
     return path_1.default.join(__dirname, '..');
 }
