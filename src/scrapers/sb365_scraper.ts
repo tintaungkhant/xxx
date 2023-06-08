@@ -15,7 +15,7 @@ import Scrapper from "../scrapper";
 import fs from "fs"
 
 
-class IBet789Scrapper extends Scrapper {
+class Sb365Scraper extends Scrapper {
     site_name: SiteName;
     page!: puppeteer.Page;
     sidebar_body_frame!: puppeteer.Frame | puppeteer.ElementHandle;
@@ -25,7 +25,7 @@ class IBet789Scrapper extends Scrapper {
     constructor(public browser: Browser) {
         super();
 
-        this.site_name = SiteName.ibet789;
+        this.site_name = SiteName.Sb365;
 
         this.logger.info("Browser ready");
     }
@@ -790,4 +790,4 @@ class IBet789Scrapper extends Scrapper {
     }
 }
 
-export default IBet789Scrapper;
+export default Sb365Scraper;

@@ -10,6 +10,7 @@ exports.OddType = OddType;
 var SiteName;
 (function (SiteName) {
     SiteName["ibet789"] = "ibet789";
+    SiteName["Sb365"] = "sb365";
 })(SiteName || (SiteName = {}));
 exports.SiteName = SiteName;
 var TeamType;

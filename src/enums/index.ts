@@ -5,6 +5,7 @@ enum OddType {
 
 enum SiteName {
     ibet789 = "ibet789",
+    Sb365 = "sb365",
 }
 
 enum TeamType {

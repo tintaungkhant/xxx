@@ -10,107 +10,121 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model iBet789League {
+model League {
   id Int @id @default(autoincrement())
 
   teams TeamsUnderLeagues[]
 
-  fixtures iBet789Fixture[]
+  fixtures Fixture[]
 
-  name String @unique
+  site_name String
+
+  name String
 
   created_at DateTime @default(now())
 
   updated_at DateTime @updatedAt
+
+  @@unique([site_name, name])
 }
 
-model iBet789Team {
+model Team {
   id Int @id @default(autoincrement())
 
   leagues TeamsUnderLeagues[]
 
-  home_fixtures iBet789Fixture[] @relation(name: "home_team")
+  home_fixtures Fixture[] @relation(name: "home_team")
 
-  away_fixtures iBet789Fixture[] @relation(name: "away_team")
+  away_fixtures Fixture[] @relation(name: "away_team")
 
-  ft_upper_fixtures iBet789OddGroup[] @relation(name: "ft_upper_team")
+  ft_upper_fixtures OddGroup[] @relation(name: "ft_upper_team")
 
-  ft_lower_fixtures iBet789OddGroup[] @relation(name: "ft_lower_team")
+  ft_lower_fixtures OddGroup[] @relation(name: "ft_lower_team")
 
-  fh_upper_fixtures iBet789OddGroup[] @relation(name: "fh_upper_team")
+  fh_upper_fixtures OddGroup[] @relation(name: "fh_upper_team")
 
-  fh_lower_fixtures iBet789OddGroup[] @relation(name: "fh_lower_team")
+  fh_lower_fixtures OddGroup[] @relation(name: "fh_lower_team")
 
-  name String @unique
+  site_name String
+
+  name String
 
   created_at DateTime @default(now())
 
   updated_at DateTime @updatedAt
+
+  @@unique([site_name, name])
 }
 
 model TeamsUnderLeagues {
-  team iBet789Team @relation(fields: [ibet789_team_id], references: [id])
-  ibet789_team_id Int
+  team Team @relation(fields: [team_id], references: [id])
+  team_id Int
 
-  league iBet789League @relation(fields: [ibet789_league_id], references: [id])
-  ibet789_league_id Int
+  league League @relation(fields: [league_id], references: [id])
+  league_id Int
 
   created_at DateTime @default(now())
 
-  @@id([ibet789_team_id, ibet789_league_id])
+  @@id([team_id, league_id])
 }
 
-model iBet789Fixture {
+model Fixture {
   id Int @id @default(autoincrement())
 
-  league iBet789League @relation(fields: [ibet789_league_id], references: [id])
-  ibet789_league_id Int
+  league League @relation(fields: [league_id], references: [id])
+  league_id Int
 
-  odd_groups iBet789OddGroup[]
+  odd_groups OddGroup[]
+
+  site_name String
 
   site_fixture_id String?
 
-  home_team iBet789Team @relation(fields: [ibet789_home_team_id], references: [id], name: "home_team")
-  ibet789_home_team_id Int
+  home_team Team @relation(fields: [home_team_id], references: [id], name: "home_team")
+  home_team_id Int
 
-  away_team iBet789Team @relation(fields: [ibet789_away_team_id], references: [id], name: "away_team")
-  ibet789_away_team_id Int
-
-  created_at DateTime @default(now())
-
-  updated_at DateTime @updatedAt
-}
-
-model iBet789OddGroup {
-  id Int @id @default(autoincrement())
-
-  fixture iBet789Fixture @relation(fields: [ibet789_fixture_id], references: [id])
-  ibet789_fixture_id Int
-
-  ft_upper_team iBet789Team? @relation(fields: [ibet789_ft_upper_team_id], references: [id], name: "ft_upper_team")
-  ibet789_ft_upper_team_id Int?
-
-  ft_lower_team iBet789Team? @relation(fields: [ibet789_ft_lower_team_id], references: [id], name: "ft_lower_team")
-  ibet789_ft_lower_team_id Int?
-
-  fh_upper_team iBet789Team? @relation(fields: [ibet789_fh_upper_team_id], references: [id], name: "fh_upper_team")
-  ibet789_fh_upper_team_id Int?
-
-  fh_lower_team iBet789Team? @relation(fields: [ibet789_fh_lower_team_id], references: [id], name: "fh_lower_team")
-  ibet789_fh_lower_team_id Int?
-
-  odds iBet789Odd[]
+  away_team Team @relation(fields: [away_team_id], references: [id], name: "away_team")
+  away_team_id Int
 
   created_at DateTime @default(now())
 
   updated_at DateTime @updatedAt
 }
 
-model iBet789Odd {
+model OddGroup {
   id Int @id @default(autoincrement())
 
-  odd_group iBet789OddGroup @relation(fields: [ibet789_odd_group_id], references: [id])
-  ibet789_odd_group_id Int
+  fixture Fixture @relation(fields: [fixture_id], references: [id])
+  fixture_id Int
+
+  ft_upper_team Team? @relation(fields: [ft_upper_team_id], references: [id], name: "ft_upper_team")
+  ft_upper_team_id Int?
+
+  ft_lower_team Team? @relation(fields: [ft_lower_team_id], references: [id], name: "ft_lower_team")
+  ft_lower_team_id Int?
+
+  fh_upper_team Team? @relation(fields: [fh_upper_team_id], references: [id], name: "fh_upper_team")
+  fh_upper_team_id Int?
+
+  fh_lower_team Team? @relation(fields: [fh_lower_team_id], references: [id], name: "fh_lower_team")
+  fh_lower_team_id Int?
+  
+  site_name String
+
+  odds Odd[]
+
+  created_at DateTime @default(now())
+
+  updated_at DateTime @updatedAt
+}
+
+model Odd {
+  id Int @id @default(autoincrement())
+
+  odd_group OddGroup @relation(fields: [odd_group_id], references: [id])
+  odd_group_id Int
+
+  site_name String
 
   type String
 

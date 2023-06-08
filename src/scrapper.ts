@@ -1,23 +1,31 @@
 import _ from "lodash";
-import { OddType } from "./enums";
+import { OddType, SiteName } from "./enums";
 import { RawOddTypes, TransformedOddTypes } from "./types";
 
 import { parseFloatArr } from "./helper";
 import Logger from "./logger";
-import iBet789League from "./models/ibet789_league";
-import iBet789Team from "./models/ibet789_team";
-import iBet789Fixture from "./models/ibet789_fixture";
-import iBet789OddGroup from "./models/ibet789_odd";
+import League from "./models/league";
+import Team from "./models/team";
+import Fixture from "./models/fixture";
+import OddGroup from "./models/odd";
 
 class Scrapper {
     logger: Logger;
+    site_name!: SiteName;
 
     constructor() {
         this.logger = new Logger();
     }
 
+    isEsportLeague(name: string){
+        return name.includes("E-FOOTBALL");
+    }
+
+    isSideMarketLeague(name: string){
+        return name.includes(" - ");
+    }
+
     formatLeagueName(name: string) {
-        name = name.split(" - ")[0];
         name = name.toUpperCase().trim();
         name = name.replace("QUALIFIERS", "").trim();
         name = name.replace("PLAYOFF", "").trim();
@@ -129,7 +137,7 @@ class Scrapper {
     }
 
     async storeData(transformed_raw_data: TransformedOddTypes.LeagueType[]) {
-        let league_names : string[] = [];
+        let league_names: string[] = [];
         let team_names = [];
 
         for (let index_1 = 0; index_1 < transformed_raw_data.length; index_1++) {
@@ -145,17 +153,17 @@ class Scrapper {
             }
         }
 
-        let db_leagues = await iBet789League.getLeaguesByNames(league_names);
+        let db_leagues = await League.getLeaguesByNames(this.site_name, league_names);
 
         if (db_leagues.length !== league_names.length) {
             for (let index = 0; index < league_names.length; index++) {
                 let league_name = league_names[index];
 
-                let db_league = db_leagues.find((db_league) => db_league.name === league_names[index]);  
-                if(!db_league){
-                    db_league = await iBet789League.createLeague(league_name);
+                let db_league = db_leagues.find((db_league) => db_league.name === league_names[index]);
+                if (!db_league) {
+                    db_league = await League.createLeague(this.site_name, league_name);
                     db_leagues.push(db_league);
-                }              
+                }
             }
         }
 
@@ -170,11 +178,11 @@ class Scrapper {
                 for (let index_2 = 0; index_2 < league.fixtures.length; index_2++) {
                     let fixture = league.fixtures[index_2];
 
-                    let db_home_team = await iBet789Team.firstOrCreateTeam(fixture.home_team_name, league_id);
+                    let db_home_team = await Team.firstOrCreateTeam(this.site_name, fixture.home_team_name, league_id);
 
-                    let db_away_team = await iBet789Team.firstOrCreateTeam(fixture.away_team_name, league_id);
+                    let db_away_team = await Team.firstOrCreateTeam(this.site_name, fixture.away_team_name, league_id);
 
-                    let db_fixture = await iBet789Fixture.firstOrCreateFixture(league_id, fixture.site_fixture_id, db_home_team.id, db_away_team.id);
+                    let db_fixture = await Fixture.firstOrCreateFixture(this.site_name, league_id, fixture.site_fixture_id, db_home_team.id, db_away_team.id);
 
                     let ft_upper_team_id: number | null;
                     let ft_lower_team_id: number | null;
@@ -197,7 +205,7 @@ class Scrapper {
                     }
 
                     if (ft_upper_team_id || fh_upper_team_id) {
-                        await iBet789OddGroup.createOdd(fixture.odds, db_fixture.id, ft_upper_team_id, ft_lower_team_id, fh_upper_team_id, fh_lower_team_id);
+                        await OddGroup.createOdd(this.site_name, fixture.odds, db_fixture.id, ft_upper_team_id, ft_lower_team_id, fh_upper_team_id, fh_lower_team_id);
                     }
                 }
             }

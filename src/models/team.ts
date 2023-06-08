@@ -1,11 +1,13 @@
+import { SiteName } from "../enums";
 import db_client from "./db_client";
 
-class iBet789Team {
-    static async getTeamsByNames(names: Array<string>) {
+class Team {
+    static async getTeamsByNames(site_name: SiteName, names: Array<string>) {
         await db_client.$connect();
 
-        let teams = await db_client.iBet789Team.findMany({
+        let teams = await db_client.team.findMany({
             where: {
+                site_name,
                 name: {
                     in: names
                 },
@@ -15,7 +17,7 @@ class iBet789Team {
                 name: true,
                 leagues: {
                     select: {
-                        ibet789_league_id: true
+                        league_id: true
                     }
                 }
             }
@@ -24,15 +26,16 @@ class iBet789Team {
         return teams;
     }
 
-    static async firstTeamByName(name: string, league_id: number) {
+    static async firstTeamByName(site_name: SiteName, name: string, league_id?: number) {
         await db_client.$connect();
 
-        let team = await db_client.iBet789Team.findFirst({
+        let team = await db_client.team.findFirst({
             where: {
+                site_name,
                 name: name,
                 leagues: {
                     some: {
-                        ibet789_league_id: league_id ? league_id : undefined
+                        league_id: league_id ? league_id : undefined
                     }
                 }
             },
@@ -46,27 +49,28 @@ class iBet789Team {
         return team;
     }
 
-    static async firstOrCreateTeam(name: string, league_id: number) {
+    static async firstOrCreateTeam(site_name: SiteName, name: string, league_id: number) {
         let team;
-
-        team = await iBet789Team.firstTeamByName(name, league_id);
+        
+        team = await Team.firstTeamByName(site_name, name);
 
         if (team) {
             if(!team.leagues.length){
-                await iBet789Team.connectLeague(team.id, league_id);
+                await Team.connectLeague(team.id, league_id);
             }
         } else {
-            team = await iBet789Team.createTeam(name, league_id)
+            team = await Team.createTeam(site_name, name, league_id)
         }
 
         return team;
     }
 
-    static async createTeam(name: string, league_id: number) {
+    static async createTeam(site_name: SiteName, name: string, league_id: number) {
         await db_client.$connect();
 
-        let team = await db_client.iBet789Team.create({
+        let team = await db_client.team.create({
             data: {
+                site_name,
                 name,
                 leagues: {
                     create: [
@@ -91,7 +95,7 @@ class iBet789Team {
     static async connectLeague(team_id: number, league_id: number) {
         await db_client.$connect();
 
-        await db_client.iBet789Team.update({
+        await db_client.team.update({
             where: {
                 id: team_id,
             },
@@ -112,4 +116,4 @@ class iBet789Team {
     }
 }
 
-export default iBet789Team;
+export default Team;

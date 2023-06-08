@@ -41,11 +41,11 @@ dotenv.config({ path: (0, helper_1.rootDir)() + '/.env' });
 const enums_1 = require("../enums");
 const scrapper_1 = __importDefault(require("../scrapper"));
 const fs_1 = __importDefault(require("fs"));
-class IBet789Scrapper extends scrapper_1.default {
+class Sb365Scraper extends scrapper_1.default {
     constructor(browser) {
         super();
         this.browser = browser;
-        this.site_name = enums_1.SiteName.ibet789;
+        this.site_name = enums_1.SiteName.Sb365;
         this.logger.info("Browser ready");
     }
     start() {
@@ -651,4 +651,4 @@ class IBet789Scrapper extends scrapper_1.default {
         });
     }
 }
-exports.default = IBet789Scrapper;
+exports.default = Sb365Scraper;

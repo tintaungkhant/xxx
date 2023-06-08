@@ -83,8 +83,8 @@ class IBet789Scrapper extends scrapper_1.default {
                 let transformed_data = yield this.transformRawData(raw_data);
                 this.logger.info("Saving to database");
                 fs_1.default.writeFileSync("test.json", JSON.stringify(transformed_data));
-                // let test = fs.readFileSync("test.json").toString();
-                // let transformed_data= JSON.parse(test);
+                // let xx = fs.readFileSync("test.json").toString();
+                // let transformed_data= JSON.parse(xx);
                 yield this.storeData(transformed_data);
                 this.logger.info("Saved to database");
                 (_a = this.browser) === null || _a === void 0 ? void 0 : _a.disconnect();

@@ -13,41 +13,43 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const db_client_1 = __importDefault(require("./db_client"));
-class ScraperFixture {
+class Fixture {
     static firstFixtureBySiteFixtureId(site_name, site_fixture_id) {
         return __awaiter(this, void 0, void 0, function* () {
             yield db_client_1.default.$connect();
-            let fixture = yield db_client_1.default.ScraperFixture.findFirst({
+            let fixture = yield db_client_1.default.fixture.findFirst({
                 where: {
+                    site_name,
                     site_fixture_id
                 }
             });
             return fixture;
         });
     }
-    static createFixture(site_name, ibet789_league_id, site_fixture_id, ibet789_home_team_id, ibet789_away_team_id) {
+    static createFixture(site_name, league_id, site_fixture_id, home_team_id, away_team_id) {
         return __awaiter(this, void 0, void 0, function* () {
             yield db_client_1.default.$connect();
-            let fixture = yield db_client_1.default.ScraperFixture.create({
+            let fixture = yield db_client_1.default.fixture.create({
                 data: {
-                    ibet789_league_id,
+                    site_name,
+                    league_id,
                     site_fixture_id,
-                    ibet789_home_team_id,
-                    ibet789_away_team_id
+                    home_team_id,
+                    away_team_id
                 }
             });
             return fixture;
         });
     }
-    static firstOrCreateFixture(site_name, ibet789_league_id, site_fixture_id, ibet789_home_team_id, ibet789_away_team_id) {
+    static firstOrCreateFixture(site_name, league_id, site_fixture_id, home_team_id, away_team_id) {
         return __awaiter(this, void 0, void 0, function* () {
             let fixture;
-            fixture = yield ScraperFixture.firstFixtureBySiteFixtureId(site_name, site_fixture_id);
+            fixture = yield Fixture.firstFixtureBySiteFixtureId(site_name, site_fixture_id);
             if (!fixture) {
-                fixture = yield ScraperFixture.createFixture(site_name, ibet789_league_id, site_fixture_id, ibet789_home_team_id, ibet789_away_team_id);
+                fixture = yield Fixture.createFixture(site_name, league_id, site_fixture_id, home_team_id, away_team_id);
             }
             return fixture;
         });
     }
 }
-exports.default = ScraperFixture;
+exports.default = Fixture;
