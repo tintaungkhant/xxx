@@ -104,7 +104,7 @@ class Browser {
         ];
 
         this.browser = await puppeteer.launch({
-            headless: false,
+            headless: true,
             args
         });
 

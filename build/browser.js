@@ -124,7 +124,7 @@ class Browser {
                 '--use-mock-keychain',
             ];
             this.browser = yield puppeteer.launch({
-                headless: false,
+                headless: true,
                 args
             });
             this.logger.info("Launched new browser");
