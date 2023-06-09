@@ -6,8 +6,6 @@ import { SiteName } from "../enums"
         let browser = new Browser(SiteName.Sb365);
 
         await browser.start();
-
-        await browser.disconnect();
     } catch (err) {
         console.log(err);
     }

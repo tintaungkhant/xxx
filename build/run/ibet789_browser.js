@@ -18,7 +18,6 @@ const enums_1 = require("../enums");
     try {
         let browser = new browser_1.default(enums_1.SiteName.ibet789);
         yield browser.start();
-        yield browser.disconnect();
     }
     catch (err) {
         console.log(err);

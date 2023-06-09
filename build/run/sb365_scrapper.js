@@ -18,13 +18,14 @@ const logger_1 = __importDefault(require("../logger"));
 const sb365_scraper_1 = __importDefault(require("../scrapers/sb365_scraper"));
 const enums_1 = require("../enums");
 var locked = false;
+var interval = 120;
 if ((0, helper_1.getCliOption)("once")) {
     (() => __awaiter(void 0, void 0, void 0, function* () { return yield run(); }))();
 }
 else {
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
         yield run();
-    }), 15000);
+    }), interval * 1000);
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {

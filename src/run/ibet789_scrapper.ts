@@ -6,12 +6,14 @@ import { SiteName } from "../enums";
 
 var locked = false;
 
+var interval = 120;
+
 if (getCliOption("once")) {
     (async () => await run())();
 } else {
     setInterval(async () => {
         await run();
-    }, 15000);
+    }, interval * 1000);
 }
 
 
