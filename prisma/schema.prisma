@@ -94,7 +94,7 @@ model Fixture {
 model OddGroup {
   id Int @id @default(autoincrement())
 
-  fixture Fixture @relation(fields: [fixture_id], references: [id])
+  fixture Fixture @relation(fields: [fixture_id], references: [id], onDelete: Cascade)
   fixture_id Int
 
   ft_upper_team Team? @relation(fields: [ft_upper_team_id], references: [id], name: "ft_upper_team")
@@ -121,7 +121,7 @@ model OddGroup {
 model Odd {
   id Int @id @default(autoincrement())
 
-  odd_group OddGroup @relation(fields: [odd_group_id], references: [id])
+  odd_group OddGroup @relation(fields: [odd_group_id], references: [id], onDelete: Cascade)
   odd_group_id Int
 
   site_name String

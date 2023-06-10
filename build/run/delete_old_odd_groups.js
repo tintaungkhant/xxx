@@ -12,15 +12,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const browser_1 = __importDefault(require("../browser"));
-const enums_1 = require("../enums");
+const moment_1 = __importDefault(require("moment"));
+const db_client_1 = __importDefault(require("../models/db_client"));
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        let browser = new browser_1.default(enums_1.SiteName.ibet789);
-        yield browser.start();
-        yield browser.disconnect();
-    }
-    catch (err) {
-        console.log(err);
-    }
+    yield deleteOdds();
 }))();
+function deleteOdds() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let last_30_min = (0, moment_1.default)().utc().subtract("30", "minutes").format();
+        yield db_client_1.default.$connect();
+        yield db_client_1.default.oddGroup.deleteMany({
+            where: {
+                created_at: {
+                    lte: last_30_min,
+                },
+            }
+        });
+    });
+}
